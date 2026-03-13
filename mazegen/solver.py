@@ -1,7 +1,6 @@
 from typing import List, Tuple
 from .cell import Cell
 
-DIR_BITS = {"N": 0, "E": 1, "S": 2, "W": 3}
 
 DIR_MOVE = {
     "N": (0, -1),
@@ -80,21 +79,28 @@ class MazeSolver:
 
             if 0 <= nx < self.width and 0 <= ny < self.height:
 
-                if (self.maze[y][x].walls & (1 << DIR_BITS[direction])) == 0:
+                cell = self.maze[y][x]
 
-                    if not self.maze[ny][nx].visited:
+                wall_open = (
+                    (direction == "N" and not cell.north) or
+                    (direction == "E" and not cell.east) or
+                    (direction == "S" and not cell.south) or
+                    (direction == "W" and not cell.west)
+                )
 
-                        path.append(direction)
+                if wall_open and not self.maze[ny][nx].visited:
 
-                        self._dfs(
-                            nx,
-                            ny,
-                            target_x,
-                            target_y,
-                            path
-                        )
+                    path.append(direction)
 
-                        path.pop()
+                    self._dfs(
+                        nx,
+                        ny,
+                        target_x,
+                        target_y,
+                        path
+                    )
+
+                    path.pop()
 
         self.maze[y][x].visited = False
 

@@ -3,8 +3,6 @@ from random import shuffle, randint, seed
 from .cell import Cell
 
 
-DIR_BITS = {"N": 0, "E": 1, "S": 2, "W": 3}
-
 DIR_MOVE = {
     "N": (0, -1),
     "E": (1, 0),
@@ -54,7 +52,15 @@ class MazeGenerator:
 
     def open_wall(self, cell: Cell, direction: str) -> None:
         """Open a wall in the given direction."""
-        cell.walls &= ~(1 << DIR_BITS[direction])
+
+        if direction == "N":
+            cell.north = False
+        elif direction == "E":
+            cell.east = False
+        elif direction == "S":
+            cell.south = False
+        elif direction == "W":
+            cell.west = False
 
     # ------------------------
     # MAZE GENERATION
@@ -96,15 +102,32 @@ class MazeGenerator:
     # UTILS
     # ------------------------
 
-    def reset_visited(self) -> None:
-        """Reset visited flag for all cells."""
-        for row in self.maze:
-            for cell in row:
-                cell.visited = False
+    # def reset_visited(self) -> None:
+    #     """Reset visited flag for all cells."""
+
+    #     for row in self.maze:
+    #         for cell in row:
+    #             cell.visited = False
 
     # ------------------------
     # OUTPUT
     # ------------------------
+
+    def _cell_to_value(self, cell: Cell) -> int:
+        """Convert cell walls to integer value."""
+
+        value = 0
+
+        if cell.north:
+            value += 1
+        if cell.east:
+            value += 2
+        if cell.south:
+            value += 4
+        if cell.west:
+            value += 8
+
+        return value
 
     def to_hex(self) -> str:
         """Return maze encoded in hexadecimal."""
@@ -113,7 +136,9 @@ class MazeGenerator:
 
         for y in range(self.height):
             for x in range(self.width):
-                output += f"{self.maze[y][x].walls:X}"
+
+                value = self._cell_to_value(self.maze[y][x])
+                output += f"{value:X}"
 
             output += "\n"
 

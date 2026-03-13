@@ -14,8 +14,8 @@ class ConfigParser:
         self.entry: Tuple[int, int] = (0, 0)
         self.exit: Tuple[int, int] = (0, 0)
         self.output_file: str = ""
-        self.perfect: bool = False
-        self.seed: Optional[int] = None
+        self.perfect: bool = False #zid fham hadi
+        self.seed: Optional[int] = None #zid fham hadi
 
     def parse(self) -> None:
         """Main function to parse and validate configuration."""
