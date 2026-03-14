@@ -14,7 +14,7 @@ def main():
     exit_ = parser.exit
     seed = parser.seed
 
-    generator = MazeGenerator(width, height, seed)
+    generator = MazeGenerator(width, height, 123)
     generator.generate()
 
     maze = generator.maze
@@ -22,11 +22,11 @@ def main():
     print("Generated Maze:")
     print(generator.to_hex())
 
-    # solver = MazeSolver(maze, entry, exit_)
-    # path = solver.solve()
+    solver = MazeSolver(maze, entry, exit_)
+    path = solver.solve()
 
-    # print("Solution path:")
-    # print(path)
+    print("Solution path:")
+    print(path)
 
 
 if __name__ == "__main__":
