@@ -1,63 +1,97 @@
 import os
 
 RESET = "\033[0m"
-WALL_COLOR = "\033[40m"   # black walls
-PATH_COLOR = "\033[47m"   # white path
-SOL_COLOR = "\033[42m"    # green solution
-ENTRY_COLOR = "\033[44m"  # blue entry
-EXIT_COLOR = "\033[41m"   # red exit
+
+WALL_COLOR = "\033[40m"
+PATH_COLOR = "\033[107m"
+SOL_COLOR = "\033[42m"
+ENTRY_COLOR = "\033[44m"
+EXIT_COLOR = "\033[41m"
+
+CELL = "  "
 
 
 class TerminalDisplay:
+
     def __init__(self, generator, config):
+
         self.generator = generator
         self.config = config
+
         self.width = config.width
         self.height = config.height
 
-    def render(self, solution_path=None):
-        os.system('cls' if os.name == 'nt' else 'clear')
+        self.show_solution = True
 
-        path_set = set(solution_path) if solution_path else set()
+        self.solution_cells = set()
 
-        print(f"Maze: {self.width}x{self.height}")
-        print("Controls: [Enter] Regenerate | [S] Toggle Solution | [Q] Quit\n")
+    def build_solution_cells(self, directions):
 
-        W = f"{WALL_COLOR}  "
+        self.solution_cells.clear()
+
+        x, y = self.config.entry
+        self.solution_cells.add((x, y))
+
+        for d in directions:
+
+            if d == "N":
+                y -= 1
+            elif d == "S":
+                y += 1
+            elif d == "E":
+                x += 1
+            elif d == "W":
+                x -= 1
+
+            self.solution_cells.add((x, y))
+
+    def clear(self):
+
+        if os.name == "nt":
+            os.system("cls")
+        else:
+            print("\033[2J\033[H", end="")
+
+    def cell_color(self, x, y):
+
+        if (x, y) == self.config.entry:
+            return ENTRY_COLOR
+
+        if (x, y) == self.config.exit:
+            return EXIT_COLOR
+
+        if self.show_solution and (x, y) in self.solution_cells:
+            return SOL_COLOR
+
+        return PATH_COLOR
+
+    def draw(self):
+
+        self.clear()
+
+        maze = self.generator.maze
 
         for y in range(self.height):
-            row_top = ""
-            row_mid = ""
-            row_bot = ""
+
+            top = ""
+            mid = ""
+            bot = ""
 
             for x in range(self.width):
-                cell = self.generator.maze[y][x]
 
-                # cell color
-                if (x, y) == self.config.entry:
-                    C = f"{ENTRY_COLOR}  "
-                elif (x, y) == self.config.exit:
-                    C = f"{EXIT_COLOR}  "
-                elif (x, y) in path_set:
-                    C = f"{SOL_COLOR}  "
-                else:
-                    C = f"{PATH_COLOR}  "
+                cell = maze[y][x]
 
-                # CORRECT WALL CHECK
-                wall_n = cell.north
-                wall_e = cell.east
-                wall_s = cell.south
-                wall_w = cell.west
+                C = self.cell_color(x, y)
 
-                N = W if wall_n else C
-                S = W if wall_s else C
-                WEST = W if wall_w else C
-                EAST = W if wall_e else C
+                N = WALL_COLOR if cell.north else C
+                S = WALL_COLOR if cell.south else C
+                E = WALL_COLOR if cell.east else C
+                W = WALL_COLOR if cell.west else C
 
-                row_top += f"{W}{N}{W}"
-                row_mid += f"{WEST}{C}{EAST}"
-                row_bot += f"{W}{S}{W}"
+                top += f"{WALL_COLOR}{CELL}{RESET}{N}{CELL}{RESET}{WALL_COLOR}{CELL}{RESET}"
+                mid += f"{W}{CELL}{RESET}{C}{CELL}{RESET}{E}{CELL}{RESET}"
+                bot += f"{WALL_COLOR}{CELL}{RESET}{S}{CELL}{RESET}{WALL_COLOR}{CELL}{RESET}"
 
-            print(row_top + RESET)
-            print(row_mid + RESET)
-            print(row_bot + RESET)
+            print(top)
+            print(mid)
+            print(bot)

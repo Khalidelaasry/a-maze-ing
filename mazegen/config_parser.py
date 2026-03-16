@@ -2,11 +2,10 @@ from typing import Dict, Tuple, Optional
 
 
 class ConfigParser:
-    """Parse and validate the maze configuration file."""
 
-    def __init__(self, config_file: str) -> None:
-        """Initialize parser with config file path."""
-        self.config_file: str = config_file
+    def __init__(self, config_file: str):
+
+        self.config_file = config_file
         self.data: Dict[str, str] = {}
 
         self.width: int = 0
@@ -14,80 +13,60 @@ class ConfigParser:
         self.entry: Tuple[int, int] = (0, 0)
         self.exit: Tuple[int, int] = (0, 0)
         self.output_file: str = ""
-        self.perfect: bool = False #zid fham hadi
-        self.seed: Optional[int] = None #zid fham hadi
+        self.perfect: bool = False
+        self.seed: Optional[int] = None
 
-    def parse(self) -> None:
-        """Main function to parse and validate configuration."""
+    def parse(self):
+
         self._read_file()
         self._parse_values()
         self._validate_coordinates()
 
-    def _read_file(self) -> None:
-        """Read config file and store key=value pairs."""
-        try:
-            with open(self.config_file, "r") as f:
-                for line in f:
-                    line = line.strip()
+    def _read_file(self):
 
-                    if not line or line.startswith("#"):
-                        continue
+        with open(self.config_file, "r") as f:
 
-                    if "=" not in line:
-                        raise ValueError(f"Invalid line: {line}")
+            for line in f:
 
-                    key, value = line.split("=", 1)
-                    self.data[key.strip().upper()] = value.strip()
+                line = line.strip()
 
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Config file not found: {self.config_file}")
+                if not line or line.startswith("#"):
+                    continue
 
-    def _parse_values(self) -> None:
-        """Convert config values to correct types."""
+                if "=" not in line:
+                    raise ValueError(f"Invalid line: {line}")
 
-        try:
-            self.width = int(self.data["WIDTH"])
-            self.height = int(self.data["HEIGHT"])
-        except KeyError as e:
-            raise ValueError(f"Missing key: {e}")
+                key, value = line.split("=", 1)
 
-        try:
-            self.entry = self._parse_coordinates(self.data["ENTRY"])
-            self.exit = self._parse_coordinates(self.data["EXIT"])
-        except KeyError as e:
-            raise ValueError(f"Missing key: {e}")
+                self.data[key.strip().upper()] = value.strip()
 
-        try:
-            self.output_file = self.data["OUTPUT_FILE"]
-        except KeyError:
-            raise ValueError("Missing OUTPUT_FILE")
+    def _parse_values(self):
 
-        try:
-            perfect_value = self.data["PERFECT"].lower()
+        self.width = int(self.data["WIDTH"])
+        self.height = int(self.data["HEIGHT"])
 
-            if perfect_value == "true":
-                self.perfect = True
-            elif perfect_value == "false":
-                self.perfect = False
-            else:
-                raise ValueError("PERFECT must be True or False")
+        self.entry = self._parse_coordinates(self.data["ENTRY"])
+        self.exit = self._parse_coordinates(self.data["EXIT"])
 
-        except KeyError:
-            raise ValueError("Missing PERFECT")
+        self.output_file = self.data["OUTPUT_FILE"]
+
+        perfect_value = self.data["PERFECT"].lower()
+
+        if perfect_value not in ("true", "false"):
+            raise ValueError("PERFECT must be True or False")
+
+        self.perfect = perfect_value == "true"
 
         if "SEED" in self.data:
             self.seed = int(self.data["SEED"])
 
-    def _parse_coordinates(self, value: str) -> Tuple[int, int]:
-        """Convert 'x,y' into tuple."""
-        try:
-            x_str, y_str = value.split(",")
-            return int(x_str), int(y_str)
-        except Exception:
-            raise ValueError(f"Invalid coordinate format: {value}")
+    def _parse_coordinates(self, value: str):
 
-    def _validate_coordinates(self) -> None:
-        """Check coordinates validity."""
+        x_str, y_str = value.split(",")
+
+        return int(x_str), int(y_str)
+
+    def _validate_coordinates(self):
 
         x_entry, y_entry = self.entry
         x_exit, y_exit = self.exit
