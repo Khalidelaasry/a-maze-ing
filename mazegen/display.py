@@ -1,12 +1,12 @@
 import os
-import sys
 
 RESET = "\033[0m"
-WALL_COLOR = "\033[47m"
-PATH_COLOR = "\033[40m"
-SOL_COLOR = "\033[42m"
-ENTRY_COLOR = "\033[44m"
-EXIT_COLOR = "\033[41m"
+WALL_COLOR = "\033[40m"   # black walls
+PATH_COLOR = "\033[47m"   # white path
+SOL_COLOR = "\033[42m"    # green solution
+ENTRY_COLOR = "\033[44m"  # blue entry
+EXIT_COLOR = "\033[41m"   # red exit
+
 
 class TerminalDisplay:
     def __init__(self, generator, config):
@@ -14,8 +14,8 @@ class TerminalDisplay:
         self.config = config
         self.width = config.width
         self.height = config.height
-        
-    def render(self, solution_path: list = None):
+
+    def render(self, solution_path=None):
         os.system('cls' if os.name == 'nt' else 'clear')
 
         path_set = set(solution_path) if solution_path else set()
@@ -23,7 +23,7 @@ class TerminalDisplay:
         print(f"Maze: {self.width}x{self.height}")
         print("Controls: [Enter] Regenerate | [S] Toggle Solution | [Q] Quit\n")
 
-        W = f"{WALL_COLOR}  {RESET}"
+        W = f"{WALL_COLOR}  "
 
         for y in range(self.height):
             row_top = ""
@@ -32,20 +32,22 @@ class TerminalDisplay:
 
             for x in range(self.width):
                 cell = self.generator.maze[y][x]
-                
-                if (x, y) == self.config.entry:
-                    C = f"{ENTRY_COLOR}  {RESET}"
-                elif (x, y) == self.config.exit:
-                    C = f"{EXIT_COLOR}  {RESET}"
-                elif (x, y) in path_set:
-                    C = f"{SOL_COLOR}  {RESET}"
-                else:
-                    C = f"{PATH_COLOR}  {RESET}"
 
-                wall_n = (cell.walls & 1) != 0
-                wall_e = (cell.walls & 2) != 0
-                wall_s = (cell.walls & 4) != 0
-                wall_w = (cell.walls & 8) != 0
+                # cell color
+                if (x, y) == self.config.entry:
+                    C = f"{ENTRY_COLOR}  "
+                elif (x, y) == self.config.exit:
+                    C = f"{EXIT_COLOR}  "
+                elif (x, y) in path_set:
+                    C = f"{SOL_COLOR}  "
+                else:
+                    C = f"{PATH_COLOR}  "
+
+                # CORRECT WALL CHECK
+                wall_n = cell.north
+                wall_e = cell.east
+                wall_s = cell.south
+                wall_w = cell.west
 
                 N = W if wall_n else C
                 S = W if wall_s else C
@@ -56,6 +58,6 @@ class TerminalDisplay:
                 row_mid += f"{WEST}{C}{EAST}"
                 row_bot += f"{W}{S}{W}"
 
-            print(row_top)
-            print(row_mid)
-            print(row_bot)
+            print(row_top + RESET)
+            print(row_mid + RESET)
+            print(row_bot + RESET)

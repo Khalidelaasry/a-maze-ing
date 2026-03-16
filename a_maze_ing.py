@@ -8,6 +8,7 @@ from mazegen.config_parser import ConfigParser
 from mazegen.generator import MazeGenerator
 from mazegen.solver import MazeSolver
 
+
 class TerminalDisplay:
     def __init__(self, config, hex_data_string):
         self.config = config
@@ -66,6 +67,7 @@ class TerminalDisplay:
             print(mid)
             print(bot)
 
+
 def main():
     if len(sys.argv) != 2:
         print("Usage: python3 a_maze_ing.py config.txt")
@@ -84,13 +86,20 @@ def main():
         while True:
             try:
                 seed = config.seed if config.seed is not None else random.randint(0, 999999)
+
                 gen = MazeGenerator(config.width, config.height, seed)
                 gen.generate()
+
+                # ⭐ ADD THIS LINE
+                gen.carve_42()
+
                 hex_data = gen.to_hex()
+
                 if "F" not in hex_data:
                     break
                 elif config.seed is not None:
                     break 
+
             except RecursionError:
                 continue
 
@@ -107,9 +116,11 @@ def main():
             f.write(full_file_content)
 
         path_coords = []
+
         if show_path:
             cx, cy = config.entry
             path_coords.append((cx, cy))
+
             for move in directions:
                 if move == 'N':
                     cy -= 1
@@ -119,20 +130,23 @@ def main():
                     cx += 1
                 elif move == 'W':
                     cx -= 1
+
                 path_coords.append((cx, cy))
 
         display = TerminalDisplay(config, hex_data)
         display.render(solution_path=path_coords)
-        
+
         cmd = input("Command > ").strip().lower()
+
         if cmd == 'q':
             break
-        elif cmd == 's': 
+        elif cmd == 's':
             show_path = not show_path
             config.seed = seed
         else:
             config.seed = None
             show_path = False
+
 
 if __name__ == "__main__":
     main()

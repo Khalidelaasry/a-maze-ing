@@ -40,7 +40,6 @@ class MazeGenerator:
         self.seed = seed_value
         seed(self.seed)
 
-        # create maze grid
         self.maze: List[List[Cell]] = [
             [Cell() for _ in range(self.width)]
             for _ in range(self.height)
@@ -51,7 +50,6 @@ class MazeGenerator:
     # ------------------------
 
     def open_wall(self, cell: Cell, direction: str) -> None:
-        """Open a wall in the given direction."""
 
         if direction == "N":
             cell.north = False
@@ -67,14 +65,13 @@ class MazeGenerator:
     # ------------------------
 
     def generate(self) -> None:
-        """Start maze generation."""
+
         start_x = self.seed % self.width
         start_y = self.seed % self.height
 
         self._dfs(start_x, start_y)
 
     def _dfs(self, x: int, y: int) -> None:
-        """Recursive DFS algorithm."""
 
         self.maze[y][x].visited = True
 
@@ -92,29 +89,16 @@ class MazeGenerator:
 
                 if not self.maze[ny][nx].visited:
 
-                    # open wall between cells
                     self.open_wall(self.maze[y][x], direction)
                     self.open_wall(self.maze[ny][nx], OPPOSITE[direction])
 
                     self._dfs(nx, ny)
 
     # ------------------------
-    # UTILS
-    # ------------------------
-
-    # def reset_visited(self) -> None:
-    #     """Reset visited flag for all cells."""
-
-    #     for row in self.maze:
-    #         for cell in row:
-    #             cell.visited = False
-
-    # ------------------------
     # OUTPUT
     # ------------------------
 
     def _cell_to_value(self, cell: Cell) -> int:
-        """Convert cell walls to integer value."""
 
         value = 0
 
@@ -130,7 +114,6 @@ class MazeGenerator:
         return value
 
     def to_hex(self) -> str:
-        """Return maze encoded in hexadecimal."""
 
         output = ""
 
@@ -143,3 +126,40 @@ class MazeGenerator:
             output += "\n"
 
         return output
+
+    # ------------------------
+    # DRAW 42
+    # ------------------------
+
+    def carve_42(self) -> None:
+        """Carve the number 42 in the center of the maze."""
+
+        cx = self.width // 2
+        cy = self.height // 2
+
+        coords = [
+
+            # 4
+            (cx-4,cy-2),(cx-4,cy-1),(cx-4,cy),
+            (cx-3,cy),
+            (cx-2,cy-2),(cx-2,cy-1),(cx-2,cy),(cx-2,cy+1),(cx-2,cy+2),
+
+            # 2
+            (cx,cy-2),(cx+1,cy-2),(cx+2,cy-2),
+            (cx+2,cy-1),
+            (cx,cy),(cx+1,cy),(cx+2,cy),
+            (cx,cy+1),
+            (cx,cy+2),(cx+1,cy+2),(cx+2,cy+2),
+        ]
+
+        for x, y in coords:
+
+            if 0 <= x < self.width and 0 <= y < self.height:
+
+                cell = self.maze[y][x]
+
+                # open all walls to make visible path
+                cell.north = False
+                cell.south = False
+                cell.east = False
+                cell.west = False
