@@ -1,4 +1,5 @@
 from typing import List, Tuple
+from collections import deque
 from .cell import Cell
 
 DIR_MOVE = {
@@ -20,54 +21,43 @@ class MazeSolver:
         self.height = len(maze)
         self.width = len(maze[0])
 
-        self.solutions: List[List[str]] = []
-
     def solve(self):
 
         self._reset_visited()
 
-        path = []
+        queue = deque()
+        queue.append((self.entry[0], self.entry[1], []))
 
-        self._dfs(self.entry[0], self.entry[1], self.exit[0], self.exit[1], path)
+        while queue:
 
-        if not self.solutions:
-            return []
+            x, y, path = queue.popleft()
 
-        return min(self.solutions, key=len)
+            if (x, y) == self.exit:
+                return path
 
-    def _dfs(self, x, y, target_x, target_y, path):
+            self.maze[y][x].visited = True
 
-        if x == target_x and y == target_y:
-            self.solutions.append(list(path))
-            return
+            for direction, (dx, dy) in DIR_MOVE.items():
 
-        self.maze[y][x].visited = True
+                nx = x + dx
+                ny = y + dy
 
-        for direction, (dx, dy) in DIR_MOVE.items():
+                if 0 <= nx < self.width and 0 <= ny < self.height:
 
-            nx = x + dx
-            ny = y + dy
+                    cell = self.maze[y][x]
 
-            if 0 <= nx < self.width and 0 <= ny < self.height:
+                    wall_open = (
+                        (direction == "N" and not cell.north) or
+                        (direction == "E" and not cell.east) or
+                        (direction == "S" and not cell.south) or
+                        (direction == "W" and not cell.west)
+                    )
 
-                cell = self.maze[y][x]
+                    if wall_open and not self.maze[ny][nx].visited:
 
-                wall_open = (
-                    (direction == "N" and not cell.north) or
-                    (direction == "E" and not cell.east) or
-                    (direction == "S" and not cell.south) or
-                    (direction == "W" and not cell.west)
-                )
+                        queue.append((nx, ny, path + [direction]))
 
-                if wall_open and not self.maze[ny][nx].visited:
-
-                    path.append(direction)
-
-                    self._dfs(nx, ny, target_x, target_y, path)
-
-                    path.pop()
-
-        self.maze[y][x].visited = False
+        return []
 
     def _reset_visited(self):
 
